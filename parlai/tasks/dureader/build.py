@@ -10,14 +10,13 @@ import os
 import tqdm
 import parlai.core.build_data as build_data
 
-
 def read_file(filename):
     with open(filename) as f:
         lines = [x for x in f.readlines()]
     return lines
 
 
-def convert_dureader_to_jsonl(input_file_path):
+def convert_dureader_to_json(input_file_path):
     print("Reading gzip file {}.".format(input_file_path))
     with gzip.open(input_file_path) as f:
         records = json.load(f)
@@ -106,37 +105,26 @@ def build(opt):
         # Mark the data as built.
         build_data.mark_done(dpath, version_string=version)
 
-"""
-import sys
-import json
-import pandas as pd
-if __name__ == '__main__':
-   if len(sys.argv) != 3:
-       print("Usage: dureader_to_msmarco.py <inputfile> <outputfile>")
-       exit()
-   else:
-       df = pd.DataFrame()
-       with open(sys.argv[1],'r') as f:
-           for l in f:
-               j = json.loads(l)
-               j['query_type'] = j.pop('question_type')
-               if 'entity_answers' in j:
-                   j.pop('entity_answers')
-               j.pop('fact_or_opinion')
-
-               j['query_id'] = j.pop('question_id')
-               j['query'] = j.pop('question')
-               passages = []
-               for k in j['documents']:
-                   data = {}
-                   if k['is_selected'] == True:
-                       data['is_selected'] = 1
-                   else:
-                       data['is_selected'] = 0
-                   data['passage_text'] = k['paragraphs']
-                   data['url'] = ''
-                   passages.append(data)
-               j['passages'] = passages
-               j.pop('documents')
-               df = df.append(j,1)
-        """
+    def convert_to_msmarco_v2(file_path):
+        with open(file_path) as f:
+            for l in f:
+                j = json.loads(l)
+                j['query_type'] = j.pop('question_type')
+                if 'entity_answers' in j:
+                    j.pop('entity_answers')
+                j.pop('fact_or_opinion')
+                j['query_id'] = j.pop('question_id')
+                j['query'] = j.pop('question')
+                passages = []
+                for k in j['documents']:
+                    data = {}
+                    if k['is_selected'] == True:
+                        data['is_selected'] = 1
+                    else:
+                        data['is_selected'] = 0
+                    data['passage_text'] = k['paragraphs']
+                    data['url'] = ''
+                    passages.append(data)
+                j['passages'] = passages
+                j.pop('documents')
+                #df = df.append(j,1)
